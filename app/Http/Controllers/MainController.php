@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 class MainController extends Controller
 {
+    /**
+     * Reference page: https://github.com/robertabcd/lol-ob/wiki/ROFL-Container-Notes
+     * @var array
+     */
     protected $unpackers = [
         'lengths' => [
             'header' => 'v',
@@ -14,6 +18,17 @@ class MainController extends Controller
             'payloadHeaderLength' => 'I',
             'payloadOffset' => 'I',
         ],
+        'payloadHeader' => [
+            'gameId' => 'V2', //should be P
+            'gameLength' => 'I',
+            'keyframeCount' => 'I',
+            'chunkCount' => 'I',
+            'endStartupChunkId' => 'I',
+            'startGameChunkId' => 'I',
+            'keyframeInterval' => 'I',
+            'encryptionKeyLength' => 'v',
+            'encryptionKey' => 'a*', //(string, see encryption key length, base64 encoded)
+        ]
     ];
 
     /**
@@ -44,11 +59,17 @@ class MainController extends Controller
         $signature = fread($h, 256);
         //Lengths
         $lengths = $this->unpack('lengths', fread($h, 26));
+        //Meta data
         $metadata = json_decode(fread($h, $lengths['metadataLength']), true);
         $metadata['statsJson'] = json_decode($metadata['statsJson'], true);
+        //Payload header
+        $payloadHeader = $this->unpack('payloadHeader', fread($h, $lengths['payloadHeaderLength']));
+
 
         echo '<pre>';
         print_r($lengths);
+        print_r($payloadHeader);
         print_r($metadata);
+
     }
 }
