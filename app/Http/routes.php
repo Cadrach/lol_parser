@@ -11,6 +11,7 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+//    echo "route " . microtime();die();
+Route::controllers([
+    '/' => 'MainController',
+]);
